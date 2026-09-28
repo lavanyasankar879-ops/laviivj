@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Card</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #f7f7f7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            padding: 20px;
+        }
+        .header-title {
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+        .card-container {
+            position: relative;
+            width: 320px;
+            height: 240px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        /* Hidden message underneath */
+        .card-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .content-heading {
+            font-size: 1.8rem;
+            color: #222;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .content-date {
+            font-size: 1.3rem;
+            color: #555;
+            font-weight: 600;
+        }
+        /* Scratch surface overlay */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            z-index: 10;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Heading -->
+    <h1 class="header-title">Scratch me</h1>
+
+    <!-- Scratch Card Box -->
+    <div class="card-container" id="cardBox">
+        <!-- Message revealed after scratching -->
+        <div class="card-content">
+            <div class="content-heading">Our Special Day</div>
+            <div class="content-date">October 12, 2026</div>
+        </div>
+        <!-- Silver Scratch Layer -->
+        <canvas id="scratchCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('scratchCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('cardBox');
+        let isDrawing = false;
+
+        function initScratchCard() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+
+            // Fill canvas with a classic silver scratch-off color
+            ctx.fillStyle = '#c0c0c0'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Optional subtle texture/hint text on top of the scratch layer
+            ctx.font = "16px sans-serif";
+            ctx.fillStyle = "#666666";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Scratch here", canvas.width / 2, canvas.height / 2);
+            
+            // Set drawing mode to erase the canvas
+            ctx.globalCompositeOperation = 'destination-out';
+        }
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineWidth = 40; // Size of the scratch brush
+            ctx.lineCap = 'round';
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // Mouse Events
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); scratch(e); });
+        canvas.addEventListener('mousemove', scratch);
+        window.addEventListener('mouseup', () => { isDrawing = false; });
+
+        // Touch Events for Mobile
+        canvas.addEventListener('touchstart', (e) => { isDrawing = true; ctx.beginPath(); scratch(e); });
+        canvas.addEventListener('touchmove', scratch);
+        window.addEventListener('touchend', () => { isDrawing = false; });
+
+        window.onload = initScratchCard;
+    </script>
+</body>
+</html>
